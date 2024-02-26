@@ -8,7 +8,6 @@
         "Unity.Collections",
         "Unity.Mathematics",
         "Unity.Burst",
-        "MatchX.Common",
         "Nakuru.Unity.Ecs.Utilities",
         "Nakuru.MatchX.Engine",
         "Nakuru.MatchX.Engine.Tests.Common"
