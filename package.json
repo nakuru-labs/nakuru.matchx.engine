@@ -1,0 +1,15 @@
+{
+  "name": "com.nakuru.matchx.engine",
+  "version": "1.0.0",
+  "displayName": "[Nakuru] MatchX Engine",
+  "description": "Deterministic engine for Match3/Match2 games using ECS architecture based on Unity.Entities.",
+  "unity": "2020.2",
+  "unityRelease": "0f1",
+  "dependencies": {
+    "com.unity.entities": "1.0.16"
+  },
+  "author": {
+    "name": "Nakuru Labs",
+    "email": "d.duck.dev@gmail.com"
+  }
+}
