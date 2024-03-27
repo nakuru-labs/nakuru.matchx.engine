@@ -47,6 +47,15 @@ namespace MatchX.Engine
 			ecb.AddComponent(entity, new Board.Position { Value = position });
 		}
 		
+		public void TriggerElement(uint elementId)
+		{
+			var ecb = GetBeginSimulationEcb();
+			var entity = ecb.CreateEntity();
+			ecb.AddComponent<EngineInput.Tag>(entity);
+			ecb.AddComponent<EngineInput.TriggerElement>(entity);
+			ecb.AddComponent(entity, new Element.Id { Value = elementId });
+		}
+		
 		public void KillElementAt(int2 position)
 		{
 			var ecb = GetBeginSimulationEcb();
