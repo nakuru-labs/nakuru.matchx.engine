@@ -14,6 +14,9 @@ namespace MatchX.Engine
 		public struct ElementCreated : IComponentData
 		{ }
 		
+		public struct ElementDestroyed : IComponentData
+		{ }
+		
 		public struct ElementMoved : IComponentData
 		{ }
 

@@ -16,6 +16,9 @@ namespace MatchX.Engine
 			
 		public struct CreateElement : IComponentData
 		{ }
+		
+		public struct TriggerElement : IComponentData
+		{ }
 			
 		public struct KillElement : IComponentData
 		{ }
