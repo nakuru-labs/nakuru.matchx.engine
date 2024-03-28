@@ -13,10 +13,20 @@ namespace MatchX.Engine
 		public void OnUpdate(ref SystemState state)
 		{
 			var ecb = new EntityCommandBuffer(Allocator.Temp);
+			var elementsToTrigger = new NativeHashSet<uint>(2, Allocator.Temp);
 			
 			foreach (var (elementIdRo, entity) in SystemAPI.Query<RefRO<Element.Id>>()
 			                                       .WithAll<EngineInput.TriggerElement>()
 			                                       .WithEntityAccess()) {
+				ecb.AddComponent<ReadyToDestroy>(entity);
+				elementsToTrigger.Add(elementIdRo.ValueRO.Value);
+			}
+
+			foreach (var (elementIdRo, entity) in SystemAPI.Query<RefRO<Element.Id>>()
+			                                               .WithAll<Element.Tag>()
+			                                               .WithEntityAccess()) {
+				if (!elementsToTrigger.Contains(elementIdRo.ValueRO.Value))
+					continue;
 				
 				ecb.AddComponent<ReadyToDestroy>(entity);
 				
@@ -26,7 +36,7 @@ namespace MatchX.Engine
 				ecb.AddComponent<EngineOutput.ElementDestroyed>(outputEntity);
 				ecb.AddComponent(outputEntity, elementIdRo.ValueRO);
 			}
-			
+
 			ecb.Playback(state.EntityManager);
 		}
 	}
