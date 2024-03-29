@@ -41,7 +41,7 @@ namespace MatchX.Engine
 			ecb.AddComponent<EngineInput.DestroyBoard>(entity);
 		}
 		
-		public void CreateElement(int2 position, NativeArray<int2> shape)
+		public void CreateElement(int2 position, NativeArray<uint2> shape)
 		{
 			var ecb = GetBeginSimulationEcb();
 			var entity = ecb.CreateEntity();

@@ -4,6 +4,7 @@ using Unity.Entities;
 namespace MatchX.Engine.Tests.Common
 {
 
+	[TestFixture]
 	public abstract class BaseEcsTestFixture
 	{
 		protected World World { get; private set; }

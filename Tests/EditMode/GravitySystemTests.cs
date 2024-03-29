@@ -4,8 +4,7 @@ using Unity.Mathematics;
 
 namespace MatchX.Engine.Tests.EditMode
 {
-
-	[TestFixture]
+	
 	public class GravitySystemTests : EngineTestFixture
 	{
 		[SetUp]
@@ -19,7 +18,7 @@ namespace MatchX.Engine.Tests.EditMode
 		public void When_GravityIsZero_ElementDoesntMove()
 		{
 			var startPosition = new int2(0, 0);
-			var entity = CreateDynamicElement(startPosition);
+			var entity = CreateDynamicElement(startPosition, GetShape1x1());
 
 			Update();
 
@@ -32,7 +31,7 @@ namespace MatchX.Engine.Tests.EditMode
 			var gravity = new int2(0, 1);
 			var startPosition = new int2(0, 2);
 			var endPosition = new int2(0, 4);
-			var entity = CreateDynamicElement(startPosition);
+			var entity = CreateDynamicElement(startPosition, GetShape1x1());
 
 			SetGravity(gravity);
 			
@@ -49,7 +48,7 @@ namespace MatchX.Engine.Tests.EditMode
 		{
 			var gravity = new int2(0, 1);
 			var startPosition = new int2(0, 0);
-			var entity = CreateDynamicElement(startPosition);
+			var entity = CreateDynamicElement(startPosition, GetShape1x1());
 
 			SetGravity(gravity);
 			Update();
@@ -73,8 +72,8 @@ namespace MatchX.Engine.Tests.EditMode
 			var start1Position = new int2(0, 0);
 			var start2Position = new int2(0, 1);
 			
-			var entity1 = CreateDynamicElement(start1Position);
-			var entity2 = CreateDynamicElement(start2Position);
+			var entity1 = CreateDynamicElement(start1Position, GetShape1x1());
+			var entity2 = CreateDynamicElement(start2Position, GetShape1x1());
 
 			SetGravity(gravity);
 			Update();
