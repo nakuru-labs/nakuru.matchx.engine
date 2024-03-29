@@ -1,5 +1,6 @@
 using MatchX.Common.Systems;
 using Nakuru.Unity.Ecs.Utilities;
+using Systems;
 using Unity.Entities;
 
 namespace MatchX.Engine
@@ -19,6 +20,8 @@ namespace MatchX.Engine
 			AddSystemToUpdateList(World.CreateSystem<DestroySlotsOfDestroyedBoardSystem>());
 			AddSystemToUpdateList(World.CreateSystem<DestroyElementsOfDestroyedSlotSystem>());
 	
+			AddSystemToUpdateList(World.CreateSystem<SyncElementSizeSystem>());
+			
 			AddSystemToUpdateList(World.CreateSystem<GravitySystem>());
 			AddSystemToUpdateList(World.CreateSystem<SyncBoardStateSystem>());
 			

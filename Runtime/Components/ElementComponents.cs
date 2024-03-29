@@ -16,7 +16,7 @@ namespace MatchX.Engine
 		
 		public struct Shape : IBufferElementData
 		{
-			public int2 Index;
+			public uint2 Index;
 		}
 		
 		public struct Size : IComponentData
