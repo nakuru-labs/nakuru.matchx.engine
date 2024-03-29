@@ -17,11 +17,12 @@ namespace Systems
 				var indices = shapeBuffer.Reinterpret<uint2>();
 
 				foreach (var index in indices) {
-					if (index.x > sizeRw.ValueRW.Value.x)
-						sizeRw.ValueRW.Value.x = index.x;
+					var indexToSize = index + 1;
+					if (indexToSize.x > sizeRw.ValueRW.Value.x)
+						sizeRw.ValueRW.Value.x = indexToSize.x;
 					
-					if (index.y > sizeRw.ValueRW.Value.y)
-						sizeRw.ValueRW.Value.y = index.y;
+					if (indexToSize.y > sizeRw.ValueRW.Value.y)
+						sizeRw.ValueRW.Value.y = indexToSize.y;
 				}
 			}
 		}
