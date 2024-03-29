@@ -1,5 +1,8 @@
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using EntityManager = Unity.Entities.EntityManager;
+using IComponentData = Unity.Entities.IComponentData;
 
 namespace MatchX.Engine
 {
@@ -38,12 +41,14 @@ namespace MatchX.Engine
 			ecb.AddComponent<EngineInput.DestroyBoard>(entity);
 		}
 		
-		public void CreateElement(int2 position)
+		public void CreateElement(int2 position, NativeArray<int2> shape)
 		{
 			var ecb = GetBeginSimulationEcb();
 			var entity = ecb.CreateEntity();
 			ecb.AddComponent<EngineInput.Tag>(entity);
 			ecb.AddComponent<EngineInput.CreateElement>(entity);
+			ecb.AddBuffer<Element.Shape>(entity).AddRange(shape.Reinterpret<Element.Shape>());
+			ecb.AddComponent<Element.Size>(entity);
 			ecb.AddComponent(entity, new Board.Position { Value = position });
 		}
 		
