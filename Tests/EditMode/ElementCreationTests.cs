@@ -1,6 +1,5 @@
 using MatchX.Engine.Tests.Common;
 using NUnit.Framework;
-using Unity.Collections;
 using Unity.Mathematics;
 
 namespace MatchX.Engine.Tests.EditMode
@@ -19,14 +18,11 @@ namespace MatchX.Engine.Tests.EditMode
 		public void When_ElementCreated_ItShouldHaveProperPosition()
 		{
 			var position = new int2(4, 3);
-			var shape = new NativeArray<uint2>(1, Allocator.Temp);
-			shape[0] = uint2.zero;
-			
-			var entity = CreateDynamicElement(position, shape);
+			var entity = CreateDynamicElement(position, GetShape1x1());
 
 			Update();
 
-			Assert.AreEqual(position, EntityManager.GetComponentData<Board.Position>(entity).Value);
+			Assert.That(position, Is.EqualTo(EntityManager.GetComponentData<Board.Position>(entity).Value));
 		}
 		
 		[Test]
@@ -44,10 +40,39 @@ namespace MatchX.Engine.Tests.EditMode
 
 			Update();
 
-			Assert.AreEqual(expectedSize1x1, EntityManager.GetComponentData<Element.Size>(entity1x1).Value);
-			Assert.AreEqual(expectedSize2x1, EntityManager.GetComponentData<Element.Size>(entity2x1).Value);
-			Assert.AreEqual(expectedSize1x2, EntityManager.GetComponentData<Element.Size>(entity1x2).Value);
-			Assert.AreEqual(expectedSize2x2, EntityManager.GetComponentData<Element.Size>(entity2x2).Value);
+			Assert.That(expectedSize1x1, Is.EqualTo(EntityManager.GetComponentData<Element.Size>(entity1x1).Value));
+			Assert.That(expectedSize2x1, Is.EqualTo(EntityManager.GetComponentData<Element.Size>(entity2x1).Value));
+			Assert.That(expectedSize1x2, Is.EqualTo(EntityManager.GetComponentData<Element.Size>(entity1x2).Value));
+			Assert.That(expectedSize2x2, Is.EqualTo(EntityManager.GetComponentData<Element.Size>(entity2x2).Value));
+		}
+		
+		[Test]
+		public void When_ElementShapeChanged_TheSizeShouldBeChangedRespectively()
+		{
+			var expectedSize1x1 = new uint2(1, 1);
+			var expectedSize2x1 = new uint2(2, 1);
+			
+			var entity = CreateDynamicElement(new int2(0, 1), GetShape1x1());
+			
+			Update();
+			
+			Assert.That(expectedSize1x1, Is.EqualTo(EntityManager.GetComponentData<Element.Size>(entity).Value));
+			
+			// add shape tile
+			var shapeBuffer = EntityManager.GetBuffer<Element.Shape>(entity);
+			shapeBuffer.Add(new uint2(1, 0));
+
+			Update();
+
+			Assert.That(expectedSize2x1, Is.EqualTo(EntityManager.GetComponentData<Element.Size>(entity).Value));
+			
+			// remove shape tile
+			shapeBuffer = EntityManager.GetBuffer<Element.Shape>(entity);
+			shapeBuffer.RemoveAt(1);
+			
+			Update();
+
+			Assert.That(expectedSize1x1, Is.EqualTo(EntityManager.GetComponentData<Element.Size>(entity).Value));
 		}
 	}
 

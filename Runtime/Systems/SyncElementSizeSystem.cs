@@ -15,15 +15,18 @@ namespace Systems
 			foreach (var (shapeBuffer, sizeRw) in SystemAPI.Query<DynamicBuffer<Element.Shape>, RefRW<Element.Size>>()
 			                                               .WithAll<Element.Tag>()) {
 				var indices = shapeBuffer.Reinterpret<uint2>();
+				var newSize = new uint2();
 
 				foreach (var index in indices) {
 					var indexToSize = index + 1;
-					if (indexToSize.x > sizeRw.ValueRW.Value.x)
-						sizeRw.ValueRW.Value.x = indexToSize.x;
+					if (indexToSize.x > newSize.x)
+						newSize.x = indexToSize.x;
 					
-					if (indexToSize.y > sizeRw.ValueRW.Value.y)
-						sizeRw.ValueRW.Value.y = indexToSize.y;
+					if (indexToSize.y > newSize.y)
+						newSize.y = indexToSize.y;
 				}
+
+				sizeRw.ValueRW.Value = newSize;
 			}
 		}
 	}
