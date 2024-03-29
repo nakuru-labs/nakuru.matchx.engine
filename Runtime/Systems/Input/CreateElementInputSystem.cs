@@ -29,7 +29,7 @@ namespace MatchX.Engine
 			var boardSlots = _boardQuery.GetSingletonBuffer<Board.Slots>(true);
 			var idGenerator = SystemAPI.GetSingleton<IdGenerator>();
 
-			foreach (var (positionRo, requestEntity) in SystemAPI.Query<RefRO<Board.Position>>()
+			foreach (var (positionRo, shapeBuffer, requestEntity) in SystemAPI.Query<RefRO<Board.Position>, DynamicBuffer<Element.Shape>>()
 			                                                 .WithAll<EngineInput.CreateElement>()
 			                                                 .WithEntityAccess()) {
 				ecb.AddComponent<ReadyToDestroy>(requestEntity);
@@ -44,6 +44,9 @@ namespace MatchX.Engine
 				ecb.AddComponent<Element.Is.Dynamic>(elementEntity);
 				ecb.AddComponent(elementEntity, elementId);
 				ecb.AddComponent(elementEntity, positionRo.ValueRO);
+				ecb.AddComponent(elementEntity, positionRo.ValueRO);
+				ecb.AddBuffer<Element.Shape>(elementEntity).CopyFrom(shapeBuffer);
+				ecb.AddComponent<Element.Size>(elementEntity);
 
 				if (boardSlots[slotIndex].Value == Entity.Null) {
 					// TODO: if there is no slot at position Generate error output

@@ -48,7 +48,6 @@ namespace MatchX.Engine
 			ecb.AddComponent<EngineInput.Tag>(entity);
 			ecb.AddComponent<EngineInput.CreateElement>(entity);
 			ecb.AddBuffer<Element.Shape>(entity).AddRange(shape.Reinterpret<Element.Shape>());
-			ecb.AddComponent<Element.Size>(entity);
 			ecb.AddComponent(entity, new Board.Position { Value = position });
 		}
 		
