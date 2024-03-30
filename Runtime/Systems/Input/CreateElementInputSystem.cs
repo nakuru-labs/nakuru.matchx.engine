@@ -2,6 +2,7 @@ using MatchX.Common;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace MatchX.Engine
 {
@@ -46,7 +47,22 @@ namespace MatchX.Engine
 				ecb.AddComponent(elementEntity, positionRo.ValueRO);
 				ecb.AddComponent(elementEntity, positionRo.ValueRO);
 				ecb.AddBuffer<Element.Shape>(elementEntity).CopyFrom(shapeBuffer);
-				ecb.AddComponent<Element.Size>(elementEntity);
+				
+				// TODO: Move the code to some utility method to use also in Sync element size system
+				var indices = shapeBuffer.Reinterpret<uint2>();
+				var size = new Element.Size();
+
+				foreach (var index in indices) {
+					var indexToSize = index + 1;
+					if (indexToSize.x > size.Value.x)
+						size.Value.x = indexToSize.x;
+					
+					if (indexToSize.y > size.Value.y)
+						size.Value.y = indexToSize.y;
+				}
+				//
+				
+				ecb.AddComponent(elementEntity, size);
 
 				if (boardSlots[slotIndex].Value == Entity.Null) {
 					// TODO: if there is no slot at position Generate error output
@@ -59,6 +75,7 @@ namespace MatchX.Engine
 				ecb.AddComponent<EngineOutput.Tag>(outputEntity);
 				ecb.AddComponent<EngineOutput.ElementCreated>(outputEntity);
 				ecb.AddComponent(outputEntity, elementId);
+				ecb.AddComponent(elementEntity, size);
 				ecb.AddComponent(outputEntity, positionRo.ValueRO);
 			}
 			
