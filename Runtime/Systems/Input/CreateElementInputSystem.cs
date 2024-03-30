@@ -75,7 +75,7 @@ namespace MatchX.Engine
 				ecb.AddComponent<EngineOutput.Tag>(outputEntity);
 				ecb.AddComponent<EngineOutput.ElementCreated>(outputEntity);
 				ecb.AddComponent(outputEntity, elementId);
-				ecb.AddComponent(elementEntity, size);
+				ecb.AddComponent(outputEntity, size);
 				ecb.AddComponent(outputEntity, positionRo.ValueRO);
 			}
 			
