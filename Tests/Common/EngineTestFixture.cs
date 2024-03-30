@@ -10,12 +10,14 @@ namespace MatchX.Engine.Tests.Common
 	{
 		protected EngineIo EngineIo { get; private set; }
 		protected Entity BoardEntity { get; private set; }
+		protected Board.Size BoardSize { get; private set; }
 
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
-			EngineIo.CreateBoard(5, 5, int2.zero);
+			BoardSize = new Board.Size { Width = 5, Height = 5 };
+			EngineIo.CreateBoard(BoardSize.Width, BoardSize.Height, int2.zero);
 			Update();
 
 			var boardQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<Board.Tag>().Build(EntityManager);
@@ -98,6 +100,14 @@ namespace MatchX.Engine.Tests.Common
 			EntityManager.SetComponentData(BoardEntity, new Board.Gravity {
 				Value = gravity
 			});
+		}
+		
+		protected DynamicBuffer<Board.CellState> GetBoardState()
+		{
+			var query = new EntityQueryBuilder(Allocator.Temp).WithAll<Board.CellState>().Build(EntityManager);
+			var boardState = query.GetSingletonBuffer<Board.CellState>();
+			
+			return boardState;
 		}
 	}
 

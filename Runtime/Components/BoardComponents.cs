@@ -32,6 +32,16 @@ namespace MatchX.Engine
 		public struct CellState : IBufferElementData
 		{
 			public bool Value;
+			
+			public static implicit operator bool(CellState shape)
+			{
+				return shape.Value;
+			}
+
+			public static implicit operator CellState(bool value)
+			{
+				return new CellState { Value = value };
+			}
 		}
 	}
 

@@ -1,6 +1,7 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace MatchX.Engine
 {
@@ -28,15 +29,21 @@ namespace MatchX.Engine
 			var boardState = _boardQuery.GetSingletonBuffer<Board.CellState>();
 			var occupiedIndexes = new NativeHashSet<int>(20, Allocator.Temp);
 			
-			foreach (var positionRo in SystemAPI.Query<RefRO<Board.Position>>().WithAll<Element.Tag>()) {
+			foreach (var (positionRo, shapeBufferRo) in SystemAPI.Query<RefRO<Board.Position>, DynamicBuffer<Element.Shape>>()
+			                                                     .WithAll<Element.Tag>()) {
 				var elementPosition = positionRo.ValueRO.Value;
-				var slotIndex = elementPosition.y * boardSize.Width + elementPosition.x;
-				occupiedIndexes.Add(slotIndex);
+				
+				// go through all the element's shapes
+				foreach (var shape in shapeBufferRo) {
+					var shapePosition = elementPosition + (int2)shape.Index;
+					var cellIndex = shapePosition.y * boardSize.Width + shapePosition.x;
+					occupiedIndexes.Add(cellIndex);
+				}
 			}
 			
 			for (var i = 0; i < boardState.Length; i++) {
 				var isOccupied = occupiedIndexes.Contains(i);
-				boardState[i] = new Board.CellState { Value = isOccupied };
+				boardState[i] = isOccupied;
 			}
 		}
 	}
