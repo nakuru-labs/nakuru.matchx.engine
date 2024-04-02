@@ -11,6 +11,7 @@ namespace MatchX.Engine.Tests.Common
 		protected EngineIo EngineIo { get; private set; }
 		protected Entity BoardEntity { get; private set; }
 		protected Board.Size BoardSize { get; private set; }
+		protected IdGenerator IdGenerator { get; private set; }
 
 		[SetUp]
 		public override void Setup()
@@ -22,6 +23,9 @@ namespace MatchX.Engine.Tests.Common
 
 			var boardQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<Board.Tag>().Build(EntityManager);
 			BoardEntity = boardQuery.GetSingletonEntity();
+			
+			var idGeneratorQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<IdGenerator>().Build(EntityManager);
+			IdGenerator = idGeneratorQuery.GetSingleton<IdGenerator>();
 		}
 
 		protected override World InitializeWorld()
@@ -38,6 +42,9 @@ namespace MatchX.Engine.Tests.Common
 			EntityManager.AddComponent<Element.Size>(entity);
 			EntityManager.AddComponentData(entity, new Board.Position {
 				Value = position
+			});
+			EntityManager.AddComponentData(entity, new Element.Id {
+				Value = IdGenerator.Next
 			});
 
 			return entity;

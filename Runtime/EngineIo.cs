@@ -50,7 +50,7 @@ namespace MatchX.Engine
 			ecb.AddBuffer<Element.Shape>(entity).AddRange(shape.Reinterpret<Element.Shape>());
 			ecb.AddComponent(entity, new Board.Position { Value = position });
 		}
-		
+
 		public void TriggerElement(uint elementId)
 		{
 			var ecb = GetBeginSimulationEcb();

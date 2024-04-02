@@ -15,7 +15,6 @@ namespace MatchX.Engine
 			AddSystemToUpdateList(World.CreateSystem<DestroyEntitiesSystem>());
 			AddSystemToUpdateList(World.CreateSystem<EngineTickSystem>());
 			
-			AddSystemToUpdateList(World.CreateSystem<GravitySystem>());
 			AddSystemToUpdateList(World.CreateSystem<EngineInputSystemsGroup>());
 			
 			AddSystemToUpdateList(World.CreateSystem<DestroySlotsOfDestroyedBoardSystem>());
@@ -23,6 +22,7 @@ namespace MatchX.Engine
 	
 			AddSystemToUpdateList(World.CreateSystem<SyncElementSizeSystem>());
 			AddSystemToUpdateList(World.CreateSystem<SyncBoardStateSystem>());
+			AddSystemToUpdateList(World.CreateSystem<GravitySystem>());
 			
 			AddSystemToUpdateList(World.CreateSystem<FlushEngineOutputSystem>());
 		}

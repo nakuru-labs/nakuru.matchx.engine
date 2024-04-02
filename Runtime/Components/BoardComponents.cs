@@ -19,6 +19,16 @@ namespace MatchX.Engine
 			public int2 Value;
 		}
 		
+		public struct Direction : IComponentData
+		{
+			public static readonly Direction Up = new() { Value = new int2(0, 1)};
+			public static readonly Direction Down = new() { Value = new int2(0, -1)};
+			public static readonly Direction Left = new() { Value = new int2(-1, 0)};
+			public static readonly Direction Right = new() { Value = new int2(1, 0)};
+			
+			public int2 Value;
+		}
+		
 		public struct Slots : IBufferElementData
 		{
 			public Entity Value;
