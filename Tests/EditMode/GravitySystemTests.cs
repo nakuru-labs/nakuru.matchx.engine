@@ -106,6 +106,22 @@ namespace MatchX.Engine.Tests.EditMode
 
 			Assert.AreEqual(startPosition2x1, EntityManager.GetComponentData<Board.Position>(entity2x1).Value);
 		}
+		
+		[Test]
+		public void When_GravityDownX1_Elements2x2_ShouldMoveDownByTheGravity()
+		{
+			var gravity = new int2(0, -1);
+			var startPosition = new int2(0, 3);
+			
+			var entity = CreateDynamicElement(startPosition, GetShape2x2());
+
+			SetGravity(gravity);
+			Update();
+
+			var targetPosition = startPosition + gravity;
+
+			Assert.AreEqual(targetPosition, EntityManager.GetComponentData<Board.Position>(entity).Value);
+		}
 	}
 
 }

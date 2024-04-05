@@ -84,7 +84,7 @@ namespace MatchX.Engine
 								var slotIndex = nextShapePosition.y * boardSize.Width + nextShapePosition.x;
 				
 								// if it's a position of the element itself
-								if (shapes.Contains(nextShapePosition - shapePosition))
+								if (shapes.Contains(shapePosition - nextShapePosition))
 									continue;
 
 								if (stateCopy[slotIndex]) {
