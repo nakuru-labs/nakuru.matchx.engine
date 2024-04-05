@@ -9,6 +9,7 @@ namespace MatchX.Engine
 	public partial struct GravitySystem : ISystem
 	{
 		private EntityQuery _boardQuery;
+		private EntityQuery _elementsQuery;
 		
 		[BurstCompile]
 		public void OnCreate(ref SystemState state)
@@ -16,8 +17,8 @@ namespace MatchX.Engine
 			_boardQuery = SystemAPI.QueryBuilder().WithAll<Board.Tag, Board.Size, Board.CellState, Board.Gravity>().Build();
 			state.RequireForUpdate(_boardQuery);
 
-			var elementQuery = SystemAPI.QueryBuilder().WithAll<Element.Tag, Board.Position>().Build();
-			state.RequireForUpdate(elementQuery);
+			_elementsQuery = SystemAPI.QueryBuilder().WithAll<Element.Tag, Board.Position, Element.Shape, Element.Is.Dynamic>().Build();
+			state.RequireForUpdate(_elementsQuery);
 			
 			state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
 		}
@@ -34,41 +35,95 @@ namespace MatchX.Engine
 			var boardSize = _boardQuery.GetSingleton<Board.Size>();
 			var boardGravity = _boardQuery.GetSingleton<Board.Gravity>();
 			var boardState = _boardQuery.GetSingletonBuffer<Board.CellState>();
-			var stateCopy = boardState.Reinterpret<bool>().AsNativeArray();
-
-			var fallingCells = new NativeHashSet<int>(10, Allocator.Temp);
+			// var stateOrigin = boardState.Reinterpret<bool>().ToNativeArray(Allocator.Temp);
+			var stateCopy = boardState.Reinterpret<bool>().ToNativeArray(Allocator.Temp);
+			// var fallingCells = new NativeHashSet<int>(10, Allocator.Temp);
+			var elementsMap = new NativeHashMap<int2, Entity>(10, Allocator.Temp);
 
 			var endingPositions = FindAllEndingPositions(ref state, boardSize, boardGravity);
 
-			foreach (var endingPosition in endingPositions) {
-				GoThroughReversedGravityPathAndMoveElements(ref stateCopy, ref fallingCells, endingPosition, boardSize, boardGravity);
+			foreach (var (positionRo, entity) in SystemAPI.Query<RefRO<Board.Position>>()
+			                                       .WithAll<Element.Tag>()
+			                                       .WithEntityAccess()) {
+				elementsMap.Add(positionRo.ValueRO.Value, entity);
 			}
 
-			foreach (var (elementId, boardPosition, shapeBuffer) in SystemAPI.Query<RefRO<Element.Id>, RefRW<Board.Position>, DynamicBuffer<Element.Shape>>()
-			                                                    .WithAll<Element.Tag, Element.Is.Dynamic>()) {
-				var elementPosition = boardPosition.ValueRO.Value;
-				var slotIndex = elementPosition.y * boardSize.Width + elementPosition.x;
+			foreach (var endingPosition in endingPositions) {
+				var previousPosition = endingPosition;
+				bool isOutOfBoardBounds;
+				bool isNextSlotFree;
+				int counter = 0;
 
-				if (!fallingCells.Contains(slotIndex))
-					continue;
+				do {
+					var nextPosition = previousPosition;
+					var nextSlotIndex = nextPosition.y * boardSize.Width + nextPosition.x;
+
+					isNextSlotFree = !stateCopy[nextSlotIndex];
+					previousPosition -= boardGravity.Value;
+					isOutOfBoardBounds = previousPosition.x < 0 || previousPosition.x >= boardSize.Width || previousPosition.y < 0
+					                     || previousPosition.y >= boardSize.Height;
+
+					if (isOutOfBoardBounds)
+						continue;
+
+					var previousSlotIndex = previousPosition.y * boardSize.Width + previousPosition.x;
+					var isPreviousSlotFree = !boardState[previousSlotIndex];
+
+					// if the origin tile can fall
+					if (!isPreviousSlotFree && isNextSlotFree) {
+
+						if (elementsMap.TryGetValue(previousPosition, out var elementEntity)) {
+
+							var shapesBuffer = state.EntityManager.GetBuffer<Element.Shape>(elementEntity);
+							var shapes = shapesBuffer.Reinterpret<int2>().ToNativeArray(Allocator.Temp);
+							var allShapesCanFallDown = true;
+							
+							foreach (var shape in shapes) {
+								var shapePosition = previousPosition + shape;
+								var nextShapePosition = shapePosition + boardGravity.Value;
+								var slotIndex = nextShapePosition.y * boardSize.Width + nextShapePosition.x;
 				
-				// check shape
-				var shapes = shapeBuffer.Reinterpret<int2>().ToNativeArray(Allocator.Temp);
-				var canElementBeMoved = CanElementBeMoved(elementPosition, boardSize, boardGravity, shapes, stateCopy);
-				
-				if (!canElementBeMoved)
-					continue;
-				
-				var targetPosition = elementPosition + boardGravity.Value;
-				boardPosition.ValueRW.Value = targetPosition;
-				
-				// create output
-				var outputEntity = ecb.CreateEntity();
-				ecb.SetName(outputEntity, $"Output<{nameof(EngineOutput.ElementMoved)}>");
-				ecb.AddComponent<EngineOutput.Tag>(outputEntity);
-				ecb.AddComponent<EngineOutput.ElementMoved>(outputEntity);
-				ecb.AddComponent(outputEntity, elementId.ValueRO);
-				ecb.AddComponent(outputEntity, boardPosition.ValueRO);
+								// if it's a position of the element itself
+								if (shapes.Contains(nextShapePosition - shapePosition))
+									continue;
+
+								if (stateCopy[slotIndex]) {
+									allShapesCanFallDown = false;
+									break;
+								}
+							}
+
+							if (allShapesCanFallDown) {
+								foreach (var shape in shapes) {
+									var shapePosition = previousPosition + shape;
+									var shapeSlotIndex = shapePosition.y * boardSize.Width + shapePosition.x;
+									stateCopy[shapeSlotIndex] = false;
+								}
+								
+								foreach (var shape in shapes) {
+									var shapePosition = nextPosition + shape;
+									var shapeSlotIndex = shapePosition.y * boardSize.Width + shapePosition.x;
+									stateCopy[shapeSlotIndex] = true;
+								}
+								
+								var elementId = SystemAPI.GetComponentRO<Element.Id>(elementEntity);
+								var positionRw = SystemAPI.GetComponentRW<Board.Position>(elementEntity);
+								positionRw.ValueRW.Value = nextPosition;
+								
+								// create output
+								var outputEntity = ecb.CreateEntity();
+								ecb.SetName(outputEntity, $"Output<{nameof(EngineOutput.ElementMoved)}>");
+								ecb.AddComponent<EngineOutput.Tag>(outputEntity);
+								ecb.AddComponent<EngineOutput.ElementMoved>(outputEntity);
+								ecb.AddComponent(outputEntity, elementId.ValueRO);
+								ecb.AddComponent(outputEntity, new Board.Position { Value = nextPosition });
+							}
+						}
+					}
+
+					counter++;
+
+				} while (!isOutOfBoardBounds || counter >= 100);
 			}
 		}
 
@@ -106,42 +161,6 @@ namespace MatchX.Engine
 			}
 
 			return result;
-		}
-		
-		private void GoThroughReversedGravityPathAndMoveElements(ref NativeArray<bool> boardState,
-		                                                         ref NativeHashSet<int> result,
-		                                                         int2 endingPosition, 
-		                                                         Board.Size boardSize, 
-		                                                         Board.Gravity boardGravity)
-		{
-			var previousPosition = endingPosition;
-			bool isOutOfBoardBounds;
-			bool isNextSlotFree;
-			int counter = 0;
-
-			do {
-				var nextSlotIndex = previousPosition.y * boardSize.Width + previousPosition.x;
-
-				isNextSlotFree = !boardState[nextSlotIndex];
-				previousPosition -= boardGravity.Value;
-				isOutOfBoardBounds = previousPosition.x < 0 || previousPosition.x >= boardSize.Width || previousPosition.y < 0
-				                     || previousPosition.y >= boardSize.Height;
-
-				if (isOutOfBoardBounds)
-					continue;
-
-				var previousSlotIndex = previousPosition.y * boardSize.Width + previousPosition.x;
-				var isPreviousSlotFree = !boardState[previousSlotIndex];
-
-				if (!isPreviousSlotFree && isNextSlotFree) {
-					result.Add(previousSlotIndex);
-					boardState[previousSlotIndex] = false;
-					boardState[nextSlotIndex] = true;
-				}
-
-				counter++;
-
-			} while (!isOutOfBoardBounds || counter >= 100);
 		}
 	}
 
