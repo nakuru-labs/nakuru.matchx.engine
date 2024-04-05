@@ -97,13 +97,18 @@ namespace MatchX.Engine
 								foreach (var shape in shapes) {
 									var shapePosition = previousPosition + shape;
 									var shapeSlotIndex = shapePosition.y * boardSize.Width + shapePosition.x;
-									stateCopy[shapeSlotIndex] = false;
+									
+									if (shapeSlotIndex >= 0 && shapeSlotIndex < stateCopy.Length)
+										stateCopy[shapeSlotIndex] = false;
 								}
 								
 								foreach (var shape in shapes) {
 									var shapePosition = nextPosition + shape;
 									var shapeSlotIndex = shapePosition.y * boardSize.Width + shapePosition.x;
 									stateCopy[shapeSlotIndex] = true;
+									
+									if (shapeSlotIndex >= 0 && shapeSlotIndex < stateCopy.Length)
+										stateCopy[shapeSlotIndex] = true;
 								}
 								
 								var elementId = SystemAPI.GetComponentRO<Element.Id>(elementEntity);

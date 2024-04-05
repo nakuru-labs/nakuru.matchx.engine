@@ -111,7 +111,7 @@ namespace MatchX.Engine.Tests.EditMode
 		public void When_GravityDownX1_Elements2x2_ShouldMoveDownByTheGravity()
 		{
 			var gravity = new int2(0, -1);
-			var startPosition = new int2(0, 3);
+			var startPosition = new int2(0, 4);
 			
 			var entity = CreateDynamicElement(startPosition, GetShape2x2());
 
