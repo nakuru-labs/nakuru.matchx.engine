@@ -122,6 +122,102 @@ namespace MatchX.Engine.Tests.EditMode
 
 			Assert.AreEqual(targetPosition, EntityManager.GetComponentData<Board.Position>(entity).Value);
 		}
+		
+		[Test]
+		public void When_GravityUpX1_Elements1x1_ShouldMoveUpByTheGravity()
+		{
+			var gravity = new int2(0, 1);
+			var startPosition = new int2(0, 0);
+			
+			var entity = CreateDynamicElement(startPosition, GetShape1x1());
+
+			SetGravity(gravity);
+			Update();
+
+			var targetPosition = startPosition + gravity;
+
+			Assert.AreEqual(targetPosition, EntityManager.GetComponentData<Board.Position>(entity).Value);
+		}
+		
+		[Test]
+		public void When_GravityLeftX1_Elements1x1_ShouldMoveLeftByTheGravity()
+		{
+			var gravity = new int2(-1, 0);
+			var startPosition = new int2(4, 0);
+			
+			var entity = CreateDynamicElement(startPosition, GetShape1x1());
+
+			SetGravity(gravity);
+			Update();
+
+			var targetPosition = startPosition + gravity;
+
+			Assert.AreEqual(targetPosition, EntityManager.GetComponentData<Board.Position>(entity).Value);
+		}
+		
+		[Test]
+		public void When_GravityRightX1_Elements1x1_ShouldMoveRightByTheGravity()
+		{
+			var gravity = new int2(1, 0);
+			var startPosition = new int2(0, 0);
+			
+			var entity = CreateDynamicElement(startPosition, GetShape1x1());
+
+			SetGravity(gravity);
+			Update();
+
+			var targetPosition = startPosition + gravity;
+
+			Assert.AreEqual(targetPosition, EntityManager.GetComponentData<Board.Position>(entity).Value);
+		}
+		
+		[Test]
+		public void When_GravityUpX1_Elements2x2_ShouldMoveUpByTheGravity()
+		{
+			var gravity = new int2(0, 1);
+			var startPosition = new int2(0, 0);
+			
+			var entity = CreateDynamicElement(startPosition, GetShape2x2());
+
+			SetGravity(gravity);
+			Update();
+
+			var targetPosition = startPosition + gravity;
+
+			Assert.AreEqual(targetPosition, EntityManager.GetComponentData<Board.Position>(entity).Value);
+		}
+		
+		[Test]
+		public void When_GravityLeftX1_Elements2x2_ShouldMoveLeftByTheGravity()
+		{
+			var gravity = new int2(-1, 0);
+			var startPosition = new int2(4, 0);
+			
+			var entity = CreateDynamicElement(startPosition, GetShape2x2());
+
+			SetGravity(gravity);
+			Update();
+
+			var targetPosition = startPosition + gravity;
+
+			Assert.AreEqual(targetPosition, EntityManager.GetComponentData<Board.Position>(entity).Value);
+		}
+		
+		[Test]
+		public void When_GravityRightX1_Elements2x2_ShouldMoveRightByTheGravity()
+		{
+			var gravity = new int2(1, 0);
+			var startPosition = new int2(0, 0);
+			
+			var entity = CreateDynamicElement(startPosition, GetShape2x2());
+
+			SetGravity(gravity);
+			Update();
+
+			var targetPosition = startPosition + gravity;
+
+			Assert.AreEqual(targetPosition, EntityManager.GetComponentData<Board.Position>(entity).Value);
+		}
 	}
 
 }

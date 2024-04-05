@@ -159,9 +159,9 @@ namespace MatchX.Engine
 				
 				// if nextPosition is out of board bounds then it's an ending position
 				// Ending position means that the element can't be moved anywhere further by the gravity 
-				if (nextPosition.x < 0 || nextPosition.x > boardSize.Width)
+				if (nextPosition.x < 0 || nextPosition.x >= boardSize.Width)
 					result.Add(slotPosition.ValueRO.Value);
-				else if (nextPosition.y < 0 || nextPosition.y > boardSize.Height)
+				else if (nextPosition.y < 0 || nextPosition.y >= boardSize.Height)
 					result.Add(slotPosition.ValueRO.Value);
 			}
 
