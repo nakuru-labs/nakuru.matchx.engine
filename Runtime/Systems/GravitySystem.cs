@@ -36,11 +36,15 @@ namespace MatchX.Engine
 		[BurstCompile]
 		public void OnUpdate(ref SystemState state)
 		{
+			var boardGravity = _boardQuery.GetSingleton<Board.Gravity>();
+
+			if (boardGravity.Value.Equals(Board.Direction.None.Value))
+				return;
+			
 			var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
 			var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
 			var boardSize = _boardQuery.GetSingleton<Board.Size>();
-			var boardGravity = _boardQuery.GetSingleton<Board.Gravity>();
 			var boardState = _boardQuery.GetSingletonBuffer<Board.CellState>();
 			var stateCopy = boardState.Reinterpret<bool>().ToNativeArray(Allocator.Temp);
 

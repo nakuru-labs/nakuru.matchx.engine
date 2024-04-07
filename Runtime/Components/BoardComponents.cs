@@ -21,6 +21,7 @@ namespace MatchX.Engine
 		
 		public struct Direction : IComponentData
 		{
+			public static readonly Direction None = new() { Value = int2.zero };
 			public static readonly Direction Up = new() { Value = new int2(0, 1)};
 			public static readonly Direction Down = new() { Value = new int2(0, -1)};
 			public static readonly Direction Left = new() { Value = new int2(-1, 0)};
