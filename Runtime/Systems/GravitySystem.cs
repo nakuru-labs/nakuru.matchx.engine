@@ -77,7 +77,11 @@ namespace MatchX.Engine
 							var nextShapePosition = shapePosition + boardGravity.Value;
 							var slotIndex = nextShapePosition.y * boardSize.Width + nextShapePosition.x;
 							
-							if (slotIndex < 0 || slotIndex >= stateCopy.Length) {
+							var isNextPosOutOfBoardBounds = nextShapePosition.x < 0 || nextShapePosition.x >= boardSize.Width 
+							                                             || nextShapePosition.y < 0 
+							                                             || nextShapePosition.y >= boardSize.Height;
+							
+							if (isNextPosOutOfBoardBounds) {
 								allShapesCanFallDown = false;
 								break;
 							}
