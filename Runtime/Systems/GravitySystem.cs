@@ -51,16 +51,9 @@ namespace MatchX.Engine
 			foreach (var endingPosition in endingPositions) {
 				var previousPosition = endingPosition;
 				bool isOutOfBoardBounds;
-				bool isNextSlotFree;
 				int counter = 0;
 
 				do {
-					var nextPosition = previousPosition;
-					var nextSlotIndex = nextPosition.y * boardSize.Width + nextPosition.x;
-
-					isNextSlotFree = !stateCopy[nextSlotIndex];
-					previousPosition -= boardGravity.Value;
-
 					isOutOfBoardBounds = previousPosition.x < 0 || previousPosition.x >= boardSize.Width || previousPosition.y < 0
 					                     || previousPosition.y >= boardSize.Height;
 
@@ -68,86 +61,70 @@ namespace MatchX.Engine
 						continue;
 
 					if (elementsMap.TryGetValue(previousPosition, out var elementEntity)) {
-						var previousSlotIndex = previousPosition.y * boardSize.Width + previousPosition.x;
-						var isPreviousSlotFree = !boardState[previousSlotIndex];
 						var shapesBuffer = state.EntityManager.GetBuffer<Element.Shape>(elementEntity);
 						var shapes = shapesBuffer.Reinterpret<int2>().ToNativeArray(Allocator.Temp);
+						var nextElementPosition = previousPosition + boardGravity.Value;
 
-						// if the origin tile can fall
-						if (!isPreviousSlotFree && isNextSlotFree) {
-							var allShapesCanFallDown = true;
+						var allShapesCanFallDown = true;
 
+						foreach (var shape in shapes) {
+							var shapePosition = previousPosition + shape;
+							var nextShapePosition = shapePosition + boardGravity.Value;
+							var slotIndex = nextShapePosition.y * boardSize.Width + nextShapePosition.x;
+
+							// if it's a position of the element itself
+							if (shapes.Contains(math.abs(shapePosition - nextShapePosition)))
+								continue;
+
+							if (slotIndex < 0 || slotIndex >= stateCopy.Length) {
+								allShapesCanFallDown = false;
+								break;
+							}
+
+							if (stateCopy[slotIndex]) {
+								allShapesCanFallDown = false;
+								break;
+							}
+						}
+
+						if (allShapesCanFallDown) {
+							
+							// free up all cells for the element
 							foreach (var shape in shapes) {
 								var shapePosition = previousPosition + shape;
-								var nextShapePosition = shapePosition + boardGravity.Value;
-								var slotIndex = nextShapePosition.y * boardSize.Width + nextShapePosition.x;
+								var shapeSlotIndex = shapePosition.y * boardSize.Width + shapePosition.x;
 
-								// if it's a position of the element itself
-								if (shapes.Contains(shapePosition - nextShapePosition))
-									continue;
-
-								if (stateCopy[slotIndex]) {
-									allShapesCanFallDown = false;
-									break;
-								}
+								if (shapeSlotIndex >= 0 && shapeSlotIndex < stateCopy.Length)
+									stateCopy[shapeSlotIndex] = false;
 							}
 
-							if (allShapesCanFallDown) {
-								foreach (var shape in shapes) {
-									var shapePosition = previousPosition + shape;
-									var shapeSlotIndex = shapePosition.y * boardSize.Width + shapePosition.x;
+							// occupy all new cells for the element
+							foreach (var shape in shapes) {
+								var shapePosition = previousPosition + shape + boardGravity.Value;
+								var shapeSlotIndex = shapePosition.y * boardSize.Width + shapePosition.x;
 
-									if (shapeSlotIndex >= 0 && shapeSlotIndex < stateCopy.Length)
-										stateCopy[shapeSlotIndex] = false;
-								}
-
-								foreach (var shape in shapes) {
-									var shapePosition = nextPosition + shape;
-									var shapeSlotIndex = shapePosition.y * boardSize.Width + shapePosition.x;
+								if (shapeSlotIndex >= 0 && shapeSlotIndex < stateCopy.Length)
 									stateCopy[shapeSlotIndex] = true;
-
-									if (shapeSlotIndex >= 0 && shapeSlotIndex < stateCopy.Length)
-										stateCopy[shapeSlotIndex] = true;
-								}
-
-								var elementId = SystemAPI.GetComponentRO<Element.Id>(elementEntity);
-								var positionRw = SystemAPI.GetComponentRW<Board.Position>(elementEntity);
-								positionRw.ValueRW.Value = nextPosition;
-
-								// create output
-								var outputEntity = ecb.CreateEntity();
-								ecb.SetName(outputEntity, $"Output<{nameof(EngineOutput.ElementMoved)}>");
-								ecb.AddComponent<EngineOutput.Tag>(outputEntity);
-								ecb.AddComponent<EngineOutput.ElementMoved>(outputEntity);
-								ecb.AddComponent(outputEntity, elementId.ValueRO);
-								ecb.AddComponent(outputEntity, new Board.Position { Value = nextPosition });
 							}
+
+							var elementId = SystemAPI.GetComponentRO<Element.Id>(elementEntity);
+							var positionRw = SystemAPI.GetComponentRW<Board.Position>(elementEntity);
+							positionRw.ValueRW.Value = nextElementPosition;
+
+							// create output
+							var outputEntity = ecb.CreateEntity();
+							ecb.SetName(outputEntity, $"Output<{nameof(EngineOutput.ElementMoved)}>");
+							ecb.AddComponent<EngineOutput.Tag>(outputEntity);
+							ecb.AddComponent<EngineOutput.ElementMoved>(outputEntity);
+							ecb.AddComponent(outputEntity, elementId.ValueRO);
+							ecb.AddComponent(outputEntity, new Board.Position { Value = nextElementPosition });
 						}
 					}
 
+					previousPosition -= boardGravity.Value;
 					counter++;
 				} while (!isOutOfBoardBounds || counter >= 100);
 			}
-		}
-
-		private bool CanElementBeMoved(
-			int2 elementPosition, Board.Size boardSize, Board.Gravity boardGravity, NativeArray<int2> elementShapes,
-			NativeArray<bool> boardState)
-		{
-			foreach (var shape in elementShapes) {
-				var shapePosition = elementPosition + shape;
-				var nextShapePosition = shapePosition + boardGravity.Value;
-				var slotIndex = nextShapePosition.y * boardSize.Width + nextShapePosition.x;
-
-				// if it's a position of the element itself
-				if (elementShapes.Contains(nextShapePosition - shapePosition))
-					continue;
-
-				if (boardState[slotIndex])
-					return false;
-			}
-
-			return true;
 		}
 
 		private NativeList<int2> FindAllEndingPositions(ref SystemState state, Board.Size boardSize, Board.Gravity boardGravity)
