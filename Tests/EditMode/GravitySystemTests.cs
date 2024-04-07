@@ -218,6 +218,28 @@ namespace MatchX.Engine.Tests.EditMode
 
 			Assert.AreEqual(targetPosition, EntityManager.GetComponentData<Board.Position>(entity).Value);
 		}
+		
+		[Test]
+		public void When_GravityDownX1_Elements2x2_FallOnTheElement1x1()
+		{
+			var gravity = new int2(0, -1);
+			var startPosition1x1 = new int2(0, 0);
+			var startPosition2x2 = new int2(0, 2);
+			
+			var entity1x1 = CreateDynamicElement(startPosition1x1, GetShape1x1());
+			var entity2x2 = CreateDynamicElement(startPosition2x2, GetShape2x2());
+
+			SetGravity(gravity);
+			Update();
+
+			var targetPosition2x2 = startPosition2x2 + gravity;
+			
+			Assert.That(EntityManager.GetComponentData<Board.Position>(entity2x2).Value, Is.EqualTo(targetPosition2x2));
+			
+			Update();
+
+			Assert.That(EntityManager.GetComponentData<Board.Position>(entity2x2).Value, Is.EqualTo(targetPosition2x2));
+		}
 	}
 
 }

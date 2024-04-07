@@ -66,20 +66,25 @@ namespace MatchX.Engine
 						var nextElementPosition = previousPosition + boardGravity.Value;
 
 						var allShapesCanFallDown = true;
+						var globalElementShapes = new NativeHashSet<int2>(shapes.Length, Allocator.Temp);
+
+						foreach (var shape in shapes) {
+							globalElementShapes.Add(previousPosition + shape);
+						}
 
 						foreach (var shape in shapes) {
 							var shapePosition = previousPosition + shape;
 							var nextShapePosition = shapePosition + boardGravity.Value;
 							var slotIndex = nextShapePosition.y * boardSize.Width + nextShapePosition.x;
-
-							// if it's a position of the element itself
-							if (shapes.Contains(math.abs(shapePosition - nextShapePosition)))
-								continue;
-
+							
 							if (slotIndex < 0 || slotIndex >= stateCopy.Length) {
 								allShapesCanFallDown = false;
 								break;
 							}
+
+							// if it's a position of the element itself
+							if (globalElementShapes.Contains(nextShapePosition))
+								continue;
 
 							if (stateCopy[slotIndex]) {
 								allShapesCanFallDown = false;
