@@ -240,6 +240,34 @@ namespace MatchX.Engine.Tests.EditMode
 
 			Assert.That(EntityManager.GetComponentData<Board.Position>(entity2x2).Value, Is.EqualTo(targetPosition2x2));
 		}
+		
+		[Test]
+		public void When_GravityDownX1_Elements2x2_And_Element1x1_MoveTogetherByTheGravity()
+		{
+			var gravity = new int2(0, -1);
+			var startPosition1x1 = new int2(1, 2);
+			var startPosition2x2 = new int2(0, 3);
+			
+			var entity1x1 = CreateDynamicElement(startPosition1x1, GetShape1x1());
+			var entity2x2 = CreateDynamicElement(startPosition2x2, GetShape2x2());
+
+			SetGravity(gravity);
+			Update();
+
+			var targetPosition1x1 = startPosition1x1 + gravity;
+			var targetPosition2x2 = startPosition2x2 + gravity;
+			
+			Assert.That(EntityManager.GetComponentData<Board.Position>(entity1x1).Value, Is.EqualTo(targetPosition1x1));
+			Assert.That(EntityManager.GetComponentData<Board.Position>(entity2x2).Value, Is.EqualTo(targetPosition2x2));
+			
+			Update();
+			
+			targetPosition1x1 += gravity;
+			targetPosition2x2 += gravity;
+			
+			Assert.That(EntityManager.GetComponentData<Board.Position>(entity1x1).Value, Is.EqualTo(targetPosition1x1));
+			Assert.That(EntityManager.GetComponentData<Board.Position>(entity2x2).Value, Is.EqualTo(targetPosition2x2));
+		}
 	}
 
 }
